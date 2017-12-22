@@ -44,19 +44,22 @@ struct {
 
 static QWORD NativesIterator = 0; // INCREMENT WHEN A ANY NATIVE IS CALLED
 
+static QWORD baseImage = 0;
+
 extern "C" QWORD callptr = 0;
 extern "C" void __fastcall StatNative(QWORD thisNative)
 {
 	NativesIterator++;
 
+	QWORD corrected = (thisNative - baseImage) + 0x140000000;
 	for (unsigned short i = 0; i < NativesInArray; i++)
-		if (Natives[i].ptrFunc == thisNative)
+		if (Natives[i].ptrFunc == corrected)
 		{
 			Natives[i].iterator++;
 			return;
 		}
 
-	Natives[NativesInArray].ptrFunc = thisNative;
+	Natives[NativesInArray].ptrFunc = corrected;
 	Natives[NativesInArray].iterator = 0;
 	NativesInArray++;
 }
@@ -78,7 +81,7 @@ int ThreadStat(void* none)
 
 	MODULEINFO ModInfo = {};
 	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(0), &ModInfo, sizeof(ModInfo));
-	QWORD baseImage = (QWORD)ModInfo.lpBaseOfDll;
+	baseImage = (QWORD)ModInfo.lpBaseOfDll;
 
 	void(*trampolinePtr)(void);
 	trampolinePtr = TrampolineFunc;
@@ -86,9 +89,10 @@ int ThreadStat(void* none)
 	void(*stNatPtr)(QWORD);
 	stNatPtr = StatNative;
 
+	bool monoPatch = true;
 	for (;;)
 	{
-		if (get_key_pressed(VK_F9))
+		if (get_key_pressed(VK_F9) && monoPatch)
 		{
 			printf("Trampoline ptr : %p\nStat Native ptr : %p\n\n", trampolinePtr, stNatPtr);
 
@@ -171,6 +175,8 @@ int ThreadStat(void* none)
 
 			printf("\n\tDetourned Native OP Code to Stat function\n\n\t");
 
+			monoPatch = false;
+
 			Sleep(1000);
 		}
 
@@ -186,7 +192,7 @@ int ThreadStat(void* none)
 			for (unsigned short i = 0; i < NativesInArray; i++)
 			{
 				float percent = ((float)Natives[i].iterator / (float)NativesIterator) * 100.0f;
-				printf("0x%p : %.6f\n", (void*)Natives[i].ptrFunc, percent);
+				printf("0x%p : %.6f %%\n", (void*)Natives[i].ptrFunc, percent);
 			}
 			printf("\n\n\tNatives Count : %u\n\tNatives Called Count : %u\n\n", NativesInArray, NativesIterator);
 		}

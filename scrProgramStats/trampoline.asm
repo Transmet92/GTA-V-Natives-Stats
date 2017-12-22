@@ -14,10 +14,12 @@ EXTERN callptr:qword
 		push r8
 		push r9
 		push r10
+		push r11
 
 		mov rcx, r8
 		call StatNative
 
+		pop r11
 		pop r10
 		pop r9
 		pop r8
