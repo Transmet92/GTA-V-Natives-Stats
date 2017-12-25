@@ -111,7 +111,7 @@ int ThreadStat(void* none)
 
 
 			// const char func[] = {
-			// 	// OVERWRITED MOVED INSTRUCTIONS
+			// 	// OVERWROTE MOVED INSTRUCTIONS
 			// 	0x48, 0x89, 0x4D, 0xA7, // mov   qword ptr [rbp-59h],rcx
 			// 	0x48, 0x8D, 0x4D, 0x97, // lea   rcx,[rbp - 69h]
 			// 
